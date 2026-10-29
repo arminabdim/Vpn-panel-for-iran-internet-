@@ -117,11 +117,14 @@ python3 openpath.py help            # فهرست دستورها
 ## بررسی صحت
 
 ```bash
-python3 openpath.py selftest      # → 46 passed, 0 failed
-python3 tools/crosscheck.py       # → تطابق کامل موتور پایتون و جاوااسکریپت
+python3 openpath.py selftest           # → 46 passed, 0 failed  (بدون اینترنت)
+python3 tools/crosscheck.py            # → تطابق کامل موتور پایتون و جاوااسکریپت
+node tools/worker_runtime_test.mjs     # → 12 passed  (ورکر واقعاً کانفیگ می‌دهد)
+npm install jsdom && node tools/panel_test.cjs   # → 57 passed  (پنل، هر دو حالت)
+python3 tools/pages_build.py           # → ساخت سایت، بدون وابستگی خارجی
 ```
 
-هر دو در CI روی هر_push اجرا می‌شوند (`.github/workflows/test.yml`).
+همه‌ی این‌ها روی هر push در CI اجرا می‌شوند (`.github/workflows/test.yml`).
 
 ---
 

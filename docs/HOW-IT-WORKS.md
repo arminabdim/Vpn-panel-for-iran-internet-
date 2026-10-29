@@ -72,5 +72,14 @@ handshakes makes sites permanently unreachable. A sweep of chunk counts
 ## Tests
 
 * `python3 openpath.py selftest` — 46 offline checks (no network).
-* `python3 tools/crosscheck.py` — Python/JS engine parity.
-* Both run in CI on every push.
+* `python3 tools/crosscheck.py` — Python/JS engine parity (50 outputs).
+* `node tools/worker_runtime_test.mjs` — renders the Worker, runs it in node
+  with `cloudflare:sockets` stubbed, and checks that `/health` and the
+  subscription really answer in all four formats (12 checks).
+* `node tools/panel_test.cjs` (needs `npm install jsdom`) — starts its own
+  bridge, then drives the panel in a real DOM in **both** modes: every tab
+  renders, the generated Worker is filled in and valid, import/export/QR work,
+  the relay template renders, Persian switches to RTL (57 checks).
+* `python3 tools/pages_build.py --out _site` — builds the Pages artifact and
+  fails if the panel ever starts loading something from the internet.
+* All of them run in CI on every push.

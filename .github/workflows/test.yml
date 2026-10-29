@@ -35,6 +35,14 @@ jobs:
           for f in panel/assets/js/*.js; do node --check "$f"; done
           for f in panel/vendor/*.js; do node --check "$f"; done
           echo "all javascript parses"
+      - name: The generated worker serves real configs
+        run: node tools/worker_runtime_test.mjs
+      - name: Panel works in a real DOM (bridge + standalone)
+        run: |
+          npm install --no-save jsdom
+          node tools/panel_test.cjs
+      - name: Pages artifact builds and is self-contained
+        run: python3 tools/pages_build.py --out _site
       - name: CLI smoke test
         run: |
           python3 openpath.py help

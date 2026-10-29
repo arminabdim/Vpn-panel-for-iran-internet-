@@ -64,6 +64,12 @@ def panel_dir() -> Optional[str]:
     return None
 
 
+def repo_root() -> Optional[str]:
+    """Repository root (the folder that holds panel/, worker/ and gas/)."""
+    panel = panel_dir()
+    return os.path.dirname(panel) if panel else None
+
+
 def new_code(n: int = 6) -> str:
     alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
     import secrets
@@ -439,6 +445,17 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(handler({}))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        # templates the panel re-uses in standalone mode; they live outside the
+        # panel folder, so serve them explicitly instead of 404ing.
+        root = repo_root()
+        if root:
+            templates = {
+                "/templates/worker.js": os.path.join(root, "worker", "src", "index.js"),
+                "/templates/Code.gs": os.path.join(root, "gas", "Code.gs"),
+            }
+            if route in templates:
+                return self._file(templates[route])
+
         # static panel
         base = STATE.panel_dir or panel_dir()
         if not base:

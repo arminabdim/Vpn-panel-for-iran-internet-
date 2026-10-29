@@ -337,7 +337,7 @@ function buildClash(links) {
   for (const l of links) {
     const ob = parseLink(l);
     if (!ob) continue;
-    const p = { name: ob.name, type: ob.type, server: ob.server, port: ob.server_port, udp: true };
+    const p = { name: ob.name, type: ob.type, server: ob.server, port: Number(ob.server_port), udp: true };
     if (ob.type === 'vless') {
       p.uuid = ob.uuid;
       if (ob.tls) {
@@ -357,6 +357,9 @@ function buildClash(links) {
     names.push(p.name);
   }
   const q = (v) => `"${String(v).replace(/"/g, '\\"')}"`;
+  // numbers and booleans must stay unquoted in YAML: a quoted port is a string,
+  // and strict clients (mihomo / Clash) reject it
+  const yv = (v) => (typeof v === 'boolean' || typeof v === 'number' ? String(v) : q(v));
   const lines = [
     'mixed-port: 7890',
     'allow-lan: false',
@@ -380,13 +383,13 @@ function buildClash(links) {
         for (const [k2, v2] of Object.entries(v)) {
           if (typeof v2 === 'object' && v2 !== null) {
             lines.push(`      ${k2}:`);
-            for (const [k3, v3] of Object.entries(v2)) lines.push(`        ${k3}: ${q(v3)}`);
+            for (const [k3, v3] of Object.entries(v2)) lines.push(`        ${k3}: ${yv(v3)}`);
           } else {
-            lines.push(`      ${k2}: ${typeof v2 === 'boolean' ? String(v2) : q(v2)}`);
+            lines.push(`      ${k2}: ${yv(v2)}`);
           }
         }
       } else {
-        lines.push(`    ${k}: ${typeof v === 'boolean' ? String(v) : q(v)}`);
+        lines.push(`    ${k}: ${yv(v)}`);
       }
     }
   }
