@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+build/
+dist/
+node_modules/
+.DS_Store
+*.log
+worker/node_modules/
+worker/.wrangler/
+worker/dist/
+.pytest_cache/
