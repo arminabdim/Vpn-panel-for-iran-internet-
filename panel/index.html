@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>OpenPath — free internet without a server</title>
+<meta name="description" content="A free, serverless panel that builds proxy configs for Iran: Cloudflare Workers, WARP, Google Apps Script relay, local DPI bypass and more.">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">⛓</span>
+    <div>
+      <h1 id="app-title">OpenPath</h1>
+      <p id="subtitle" class="muted">Free internet without a server</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div id="bridge-status" class="bridge-status"><span class="dot off"></span><span>checking…</span></div>
+    <button id="lang-btn" class="btn ghost">فارسی</button>
+  </div>
+</header>
+
+<nav id="tabs" class="tabs" aria-label="sections"></nav>
+
+<main>
+  <div id="busy" class="busy" hidden>working…</div>
+  <div id="view"></div>
+</main>
+
+<footer class="footer">
+  <p>
+    OpenPath is a tool for access to information. It contains no tracking, calls no
+    third-party service, and stores nothing outside your own device and browser.
+  </p>
+  <p class="muted small">
+    How you use it is your responsibility — follow the laws and stay safe. Public
+    proxy configs are operated by strangers: never send passwords or bank details
+    through a node you did not create yourself.
+  </p>
+  <p class="muted small">
+    Source: <a href="https://github.com/arminabdim/Vpn-panel-for-iran-internet-" target="_blank" rel="noopener">github.com/arminabdim/Vpn-panel-for-iran-internet-</a>
+  </p>
+</footer>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="vendor/qrcode.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/methods.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

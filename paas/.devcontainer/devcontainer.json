@@ -1,0 +1,14 @@
+{
+  "name": "OpenPath free node",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {},
+  "forwardPorts": [443],
+  "portsAttributes": {
+    "443": { "label": "openpath", "onAutoForward": "silent", "visibility": "public" }
+  },
+  "postStartCommand": "bash .devcontainer/start.sh",
+  "remoteEnv": {
+    "OPENPATH_PRESET": "vless-ws",
+    "OPENPATH_PORT": "443"
+  }
+}
