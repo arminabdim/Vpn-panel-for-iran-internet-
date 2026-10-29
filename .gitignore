@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 .venv/
 build/
+_site/
 dist/
 node_modules/
 .DS_Store

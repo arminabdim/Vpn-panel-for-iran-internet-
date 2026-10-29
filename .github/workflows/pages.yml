@@ -7,7 +7,8 @@ name: pages
 on:
   push:
     branches: [main]
-    paths: ["panel/**", ".github/workflows/pages.yml"]
+    paths: ["panel/**", "worker/src/index.js", "gas/Code.gs", "tools/pages_build.py",
+            ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -24,18 +25,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check the panel has no external dependencies
-        run: |
-          if grep -rEn 'src="https?://|href="https?://[^"]*\.css|@import ' panel/index.html panel/assets; then
-            echo "::error::the panel must not load anything from the internet"
-            grep -rEn 'src="https?://|href="https?://[^"]*\.css|@import ' panel/index.html panel/assets || true
-            exit 1
-          fi
-          echo "ok - panel is fully self-contained"
+      # tools/pages_build.py copies the panel into _site, ships the Worker and
+      # Apps Script templates as templates/ (standalone mode renders them in the
+      # browser) and fails the build if anything external sneaks in.
+      - name: Build the panel (and check it is self-contained)
+        run: python3 tools/pages_build.py --out _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: panel
+          path: _site
   deploy:
     needs: build
     runs-on: ubuntu-latest

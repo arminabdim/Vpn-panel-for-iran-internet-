@@ -142,11 +142,14 @@ python3 openpath.py selftest        # 46 offline checks
 ## Verifying it yourself
 
 ```bash
-python3 openpath.py selftest      # → 46 passed, 0 failed
-python3 tools/crosscheck.py       # → python and javascript engines agree
+python3 openpath.py selftest         # → 46 passed, 0 failed   (offline)
+python3 tools/crosscheck.py          # → python and javascript engines agree
+node tools/worker_runtime_test.mjs   # → 12 passed  (the worker really serves configs)
+npm install jsdom && node tools/panel_test.cjs   # → 57 passed  (panel, both modes)
+python3 tools/pages_build.py         # → builds the site, refuses external deps
 ```
 
-Both run in CI on every push (`.github/workflows/test.yml`).
+All of them run in CI on every push (`.github/workflows/test.yml`).
 
 ---
 

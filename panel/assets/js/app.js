@@ -368,42 +368,64 @@
       settings.uuid = Engine.newUUID();
       $('#w-uuid').value = settings.uuid;
     }
+    let code = '';
     if (state.bridge) {
       try {
         const res = await bridgeCall('/api/cf/render', { settings });
-        state.workerCode = res.code;
+        code = res.code || '';
         toast('worker code generated', 'ok');
       } catch (e) {
         toast(e.message, 'err');
       }
     }
-    // Always produce a local copy too (works in standalone mode).
-    if (!state.workerCode) state.workerCode = buildWorkerCodeLocal(settings);
-    download('openpath-worker.js', state.workerCode, 'application/javascript');
+    // No bridge (or it failed): render the template in the browser. Note the
+    // await - buildWorkerCodeLocal is async and without it the download is a
+    // file containing "[object Promise]".
+    if (!code) code = await buildWorkerCodeLocal(settings);
+    if (!code) return;
+    state.workerCode = code;
+    download('openpath-worker.js', code, 'application/javascript');
     toast(t('download') + ': openpath-worker.js', 'ok');
   }
 
-  // Standalone fallback: the panel keeps its own copy of the template so it can
-  // render a Worker even with no bridge at all.
-  let templateCache = null;
-  async function getTemplate() {
-    if (templateCache) return templateCache;
-    try {
-      const resp = await fetch('../worker/src/index.js');
-      if (resp.ok) {
-        templateCache = await resp.text();
-        return templateCache;
+  // Standalone fallback: the panel ships its own copy of the templates so it can
+  // render a Worker or a relay even with no bridge at all. The published site
+  // keeps them under templates/, a local static server may be started from the
+  // repository root, so try both shapes.
+  const TEMPLATE_URLS = {
+    worker: ['templates/worker.js', '../worker/src/index.js', 'worker/src/index.js'],
+    gas: ['templates/Code.gs', '../gas/Code.gs', 'gas/Code.gs'],
+  };
+
+  async function fetchFirst(urls) {
+    for (const url of urls) {
+      try {
+        const resp = await fetch(url);
+        if (resp.ok) {
+          const text = await resp.text();
+          if (text && !text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
+            return text;
+          }
+        }
+      } catch (e) {
+        /* try the next one */
       }
-    } catch (e) {
-      /* ignore */
     }
     return null;
   }
 
+  const templateCache = {};
+  async function getTemplate(kind) {
+    if (templateCache[kind]) return templateCache[kind];
+    const text = await fetchFirst(TEMPLATE_URLS[kind] || []);
+    if (text) templateCache[kind] = text;
+    return text;
+  }
+
   async function buildWorkerCodeLocal(settings) {
-    const tpl = await getTemplate();
+    const tpl = await getTemplate('worker');
     if (!tpl) {
-      toast('worker template unavailable - run openpath cf code', 'err');
+      toast('worker template unavailable - run "openpath cf code"', 'err');
       return '';
     }
     const map = {
@@ -725,15 +747,14 @@
               toast(e.message, 'err');
             }
           } else {
-            try {
-              const resp = await fetch('../gas/Code.gs');
-              const text = await resp.text();
+            const text = await getTemplate('gas');
+            if (!text) {
+              toast('relay template unavailable - run "openpath gas new"', 'err');
+            } else {
               const key = Engine.randPassword(18);
               download('Code.gs', text.replace('{{AUTH_KEY}}', key));
               $('#g-key').value = key;
               toast('Code.gs downloaded (key: ' + key + ')', 'ok');
-            } catch (e) {
-              toast('could not load the template', 'err');
             }
           }
         });
