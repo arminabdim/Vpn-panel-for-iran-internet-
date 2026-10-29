@@ -14,19 +14,32 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - name: Offline self test
         run: python3 openpath.py selftest
       - name: Python / JavaScript engine parity
-        run: |
-          node --version
-          python3 tools/crosscheck.py
+        run: python3 tools/crosscheck.py
       - name: Syntax check every Python file
         run: python3 -m compileall -q openpath tools openpath.py
       - name: Syntax check the worker and the panel
         run: |
-          node --check worker/src/index.js
+          # worker/src/index.js is a TEMPLATE ({{SLOT}}): it only becomes valid
+          # javascript once it is rendered. Render it, make sure no slot is
+          # left, then parse it as an ES module (.mjs, because node 20 does not
+          # auto-detect ESM while node 22 does).
+          python3 openpath.py cf code --out /tmp/worker-check.mjs
+          python3 -c "src=open('/tmp/worker-check.mjs').read(); assert '{{' not in src, 'unfilled slot'; print('rendered worker:', len(src), 'bytes')"
+          node --check /tmp/worker-check.mjs
           for f in panel/assets/js/*.js; do node --check "$f"; done
+          for f in panel/vendor/*.js; do node --check "$f"; done
+          echo "all javascript parses"
       - name: CLI smoke test
         run: |
           python3 openpath.py help
-          python3 openpath.py worker --help || true
+          python3 openpath.py cf --help
+          python3 openpath.py sub sources
+          python3 openpath.py paas presets
+          python3 openpath.py make --link 'vless://b4b7d3d1-2f0f-4a64-9ddc-1a4b2c3d4e5f@demo.workers.dev:443?encryption=none&security=tls&type=ws&host=demo.workers.dev&path=%2Fx#ci' < /dev/null
+          python3 openpath.py guide | head -5
